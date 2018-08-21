@@ -295,6 +295,7 @@ AC_CONFIG_FILES([Makefile
 		targets/psa_switch/Makefile
 		targets/psa_switch/tests/Makefile
     targets/simple_sume_switch/Makefile
+    targets/simple_sume_switch/tests/Makefile
 		tests/Makefile
 		tests/stress_tests/Makefile
                 tools/Makefile

@@ -17,15 +17,15 @@ packet_id_t SimpleSumeSwitch::packet_id = 0;
 SimpleSumeSwitch::SimpleSumeSwitch(bool enable_swap)
   : Switch(enable_swap) {
 
-  add_required_field("sume_metadata", "dma_q_size");
-  add_required_field("sume_metadata", "nf3_q_size");
-  add_required_field("sume_metadata", "nf2_q_size");
-  add_required_field("sume_metadata", "nf1_q_size");
-  add_required_field("sume_metadata", "nf0_q_size");
-  add_required_field("sume_metadata", "send_dig_to_cpu");
-  add_required_field("sume_metadata", "dst_port");
-  add_required_field("sume_metadata", "src_port");
-  add_required_field("sume_metadata", "pkt_len");
+  // add_required_field("sume_metadata", "dma_q_size");
+  // add_required_field("sume_metadata", "nf3_q_size");
+  // add_required_field("sume_metadata", "nf2_q_size");
+  // add_required_field("sume_metadata", "nf1_q_size");
+  // add_required_field("sume_metadata", "nf0_q_size");
+  // add_required_field("sume_metadata", "send_dig_to_cpu");
+  // add_required_field("sume_metadata", "dst_port");
+  // add_required_field("sume_metadata", "src_port");
+  // add_required_field("sume_metadata", "pkt_len");
 
   force_arith_header("sume_metadata");
   force_arith_header("user_metadata");
@@ -88,6 +88,7 @@ SimpleSumeSwitch::receive_(port_t port_num, const char *buffer, int len) {
 
   // TODO: traffic management
   // TODO: prepend digest data if send to cpu
+  /* send_dig_to_cpu - set the least significant bit of this field to send the digest_data to the CPU. If this bit is set and a packet is to be forwarded to the CPU then the digest_data will be prepended to the packet. Otherwise, only the digest_data will be sent over DMA. */
 
   BMELOG(packet_out, *packet);
   BMLOG_DEBUG_PKT(*packet, "Transmitting packet of size {} out of port {}",
