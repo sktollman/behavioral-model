@@ -39,14 +39,14 @@ using bm::ActionData;
 using bm::MatchKeyParam;
 using bm::entry_handle_t;
 
-// namespace {
+namespace {
 
-// void
-// packet_handler(int port_num, const char *buffer, int len, void *cookie) {
-//   static_cast<SimpleSwitch *>(cookie)->receive(port_num, buffer, len);
-// }
+void
+packet_handler(int port_num, const char *buffer, int len, void *cookie) {
+  static_cast<SimpleSumeSwitch *>(cookie)->receive(port_num, buffer, len);
+}
 
-// }  // namespace
+}  // namespace
 
 class SimpleSwitch_PacketRedirectP4 : public ::testing::Test {
  protected:
@@ -55,32 +55,37 @@ class SimpleSwitch_PacketRedirectP4 : public ::testing::Test {
   static constexpr bm::device_id_t device_id{0};
 
   SimpleSwitch_PacketRedirectP4()
-      : packet_inject(packet_in_addr),
-        events(event_logger_addr) { }
+      : packet_inject(packet_in_addr){}//,
+        // events(event_logger_addr) { }
 
   // Per-test-case set-up.
   // We make the switch a shared resource for all tests. This is mainly because
   // the simple_switch target detaches threads
   static void SetUpTestCase() {
     // bm::Logger::set_logger_console();
-#ifdef BMELOG_ON
-    auto event_transport = bm::TransportIface::make_nanomsg(event_logger_addr);
-    event_transport->open();
-    bm::EventLogger::init(std::move(event_transport));
-#endif
-
+// #ifdef BMELOG_ON
+//     auto event_transport = bm::TransportIface::make_nanomsg(event_logger_addr);
+//     event_transport->open();
+//     bm::EventLogger::init(std::move(event_transport));
+// #endif
+    // std::cout<< "setting up!" << std::endl;
     test_switch = new SimpleSumeSwitch(8);  // 8 ports
+    // std::cout<< "created" << std::endl;
 
     // load JSON
     fs::path json_path = fs::path(testdata_dir) / fs::path(test_json);
     test_switch->init_objects(json_path.string());
+    // std::cout<< "json loaded" << std::endl;
 
     // packet in - packet out
     test_switch->set_dev_mgr_packet_in(device_id, packet_in_addr, nullptr);
+    // std::cout<< "set packet in" << std::endl;
     test_switch->Switch::start();  // there is a start member in SimpleSwitch
-    // test_switch->set_packet_handler(packet_handler, // TODO: do I actually need this??
-    //                                 static_cast<void *>(test_switch));
+    // std::cout<< "started" << std::endl;
+    test_switch->set_packet_handler(packet_handler, // TODO: do I actually need this??
+                                    static_cast<void *>(test_switch));
     test_switch->start_and_return();
+    // std::cout<< "started and returned" << std::endl;
   }
 
   // Per-test-case tear-down.
@@ -88,22 +93,13 @@ class SimpleSwitch_PacketRedirectP4 : public ::testing::Test {
     delete test_switch;
   }
 
+//TODO: I think I need a packet handler...
   virtual void SetUp() {
-    // TODO(antonin): a lot of manual work here, can I add some of it?
-
     packet_inject.start();
     auto cb = std::bind(&PacketInReceiver::receive, &receiver,
                         std::placeholders::_1, std::placeholders::_2,
                         std::placeholders::_3, std::placeholders::_4);
     packet_inject.set_packet_receiver(cb, nullptr);
-
-    events.start();
-
-    // default actions for all tables
-    // test_switch->mt_set_default_action(0, "t_ingress_1", "_nop", ActionData());
-    // test_switch->mt_set_default_action(0, "t_ingress_2", "_nop", ActionData());
-    // test_switch->mt_set_default_action(0, "t_egress", "_nop", ActionData());
-    // test_switch->mt_set_default_action(0, "t_exit", "set_hdr", ActionData());
   }
 
   virtual void TearDown() {
@@ -131,12 +127,12 @@ class SimpleSwitch_PacketRedirectP4 : public ::testing::Test {
   // }
 
  protected:
-  static const std::string event_logger_addr;
+  // static const std::string event_logger_addr;
   static const std::string packet_in_addr;
   static SimpleSumeSwitch *test_switch;
   bm_apps::PacketInject packet_inject;
   PacketInReceiver receiver{};
-  NNEventListener events;
+  // NNEventListener events;
 
  private:
   static const std::string testdata_dir;
@@ -149,10 +145,11 @@ class SimpleSwitch_PacketRedirectP4 : public ::testing::Test {
 // packet drops are to be expected when the phblisher is faster than the
 // consummer. However, I do not believe my consummer is that slow and I never
 // observe the drops with 'ipc'
-const std::string SimpleSwitch_PacketRedirectP4::event_logger_addr =
-    "ipc:///tmp/test_events_abc123";
+// const std::string SimpleSwitch_PacketRedirectP4::event_logger_addr =
+//     "ipc:///tmp/test_events_abc123";
 const std::string SimpleSwitch_PacketRedirectP4::packet_in_addr =
-    "ipc:///tmp/test_packet_in_abc123";
+"inproc://packets";
+    // "ipc:///tmp/test_packet_in_abc1234";
 
 SimpleSumeSwitch *SimpleSwitch_PacketRedirectP4::test_switch = nullptr;
 
@@ -161,6 +158,7 @@ const std::string SimpleSwitch_PacketRedirectP4::test_json =
     "add_sume_2.json";
 
 TEST_F(SimpleSwitch_PacketRedirectP4, Recirculate) {
+  // std::cout<< "starting test" << std::endl;
   static constexpr int port_in = 1;
   static constexpr int port_out_1 = 2;
   static constexpr int port_out_2 = 3;
@@ -198,10 +196,22 @@ TEST_F(SimpleSwitch_PacketRedirectP4, Recirculate) {
   //                                     &h_3, 1));
 
   // recirc packet needs to be larger because of remove_header call
-  const char pkt[] = {'\x06', '\x00', '\x00', '\x00', '\x00', '\x00'};
+  const char pkt[] = {
+    '\x00', '\x00', '\x00', '\x00', // source eth
+    '\x00', '\x00', '\x00', '\x00', // dst eth
+    '\x12', '\x12', // ethertype
+    '\x00', '\x00', '\x00', '\x01', // op1
+    '\x00', // opcode
+    '\x00', '\x00', '\x00', '\x01', // op2
+  };
+  std::cout << "0" << std::endl;
   packet_inject.send(port_in, pkt, sizeof(pkt));
+  std::cout << "1" << std::endl;
   char recv_buffer[kMaxBufSize];
   int recv_port = -1;
   receiver.read(recv_buffer, sizeof(pkt), &recv_port);
+  std::cout << "2" << std::endl;
+  std::cout << "RECV BUFFER: " << recv_buffer << std::endl;
+  printf("RECV BUFFER: %s\n", recv_buffer);
   ASSERT_EQ(port_out_2, recv_port);
 }

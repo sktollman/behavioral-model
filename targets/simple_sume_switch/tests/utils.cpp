@@ -168,12 +168,17 @@ PacketInReceiver::read(char *dst, size_t max_size, int *recv_port) {
   while (status != Status::CAN_READ) {
     can_read.wait(lock);
   }
+  printf("1.1\n");
   size_t size = std::min(max_size, buffer_.size());
+  printf("1.2\n");
   std::copy(buffer_.begin(), buffer_.begin() + size, dst);
+  printf("1.3\n");
   buffer_.clear();
   *recv_port = port;
   status = Status::CAN_RECEIVE;
+  printf("1.4\n");
   can_receive.notify_one();
+  printf("1.5\n");
   return size;
 }
 

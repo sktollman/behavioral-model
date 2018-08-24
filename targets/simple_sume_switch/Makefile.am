@@ -1,18 +1,21 @@
-noinst_PROGRAMS = simple_sume_switch
-simple_sume_switch_SOURCES = simple_sume_switch.h simple_sume_switch.cpp
-simple_sume_switch_LDADD = $(top_builddir)/src/bm_runtime/libbmruntime.la \
-$(top_builddir)/src/bm_sim/libbmsim.la \
-$(top_builddir)/src/bf_lpm_trie/libbflpmtrie.la \
-$(top_builddir)/thrift_src/libruntimestubs.la \
-$(top_builddir)/src/BMI/libbmi.la \
-$(top_builddir)/third_party/jsoncpp/libjson.la \
--lboost_system $(THRIFT_LIB) -lboost_program_options -lboost_filesystem
+# noinst_PROGRAMS = simple_sume_switch
+# simple_sume_switch_SOURCES = simple_sume_switch.h simple_sume_switch.cpp
+# simple_sume_switch_LDADD = $(top_builddir)/src/bm_runtime/libbmruntime.la \
+# $(top_builddir)/src/bm_sim/libbmsim.la \
+# $(top_builddir)/src/bf_lpm_trie/libbflpmtrie.la \
+# $(top_builddir)/thrift_src/libruntimestubs.la \
+# $(top_builddir)/src/BMI/libbmi.la \
+# $(top_builddir)/third_party/jsoncpp/libjson.la \
+# -lboost_system $(THRIFT_LIB) -lboost_program_options -lboost_filesystem
 
 if COND_NANOMSG
 MAYBE_TESTS = tests
 endif
 
 SUBDIRS = . $(MAYBE_TESTS)
+
+noinst_LTLIBRARIES = libsimplesumeswitch.la
+lib_LTLIBRARIES = libsimplesumeswitch_runner.la
 
 libsimplesumeswitch_la_SOURCES = \
 simple_sume_switch.cpp \
@@ -33,4 +36,13 @@ $(top_builddir)/third_party/jsoncpp/libjson.la \
 libsimplesumeswitch_runner_la_LIBADD = \
 $(PI_LIB) \
 libsimplesumeswitch.la
+
+bin_PROGRAMS = simple_sume_switch
+
+simple_sume_switch_LDADD = \
+$(top_builddir)/src/bm_runtime/libbmruntime.la \
+$(top_builddir)/thrift_src/libruntimestubs.la \
+libsimplesumeswitch.la
+
+simple_sume_switch_SOURCES = main.cpp
 

@@ -17,19 +17,19 @@ packet_id_t SimpleSumeSwitch::packet_id = 0;
 SimpleSumeSwitch::SimpleSumeSwitch(bool enable_swap)
   : Switch(enable_swap) {
 
-  // add_required_field("sume_metadata", "dma_q_size");
-  // add_required_field("sume_metadata", "nf3_q_size");
-  // add_required_field("sume_metadata", "nf2_q_size");
-  // add_required_field("sume_metadata", "nf1_q_size");
-  // add_required_field("sume_metadata", "nf0_q_size");
-  // add_required_field("sume_metadata", "send_dig_to_cpu");
-  // add_required_field("sume_metadata", "dst_port");
-  // add_required_field("sume_metadata", "src_port");
-  // add_required_field("sume_metadata", "pkt_len");
+  add_required_field("sume_metadata_t", "dma_q_size");
+  add_required_field("sume_metadata_t", "nf3_q_size");
+  add_required_field("sume_metadata_t", "nf2_q_size");
+  add_required_field("sume_metadata_t", "nf1_q_size");
+  add_required_field("sume_metadata_t", "nf0_q_size");
+  add_required_field("sume_metadata_t", "send_dig_to_cpu");
+  add_required_field("sume_metadata_t", "dst_port");
+  add_required_field("sume_metadata_t", "src_port");
+  add_required_field("sume_metadata_t", "pkt_len");
 
-  force_arith_header("sume_metadata");
-  force_arith_header("user_metadata");
-  force_arith_header("digest_data");
+  force_arith_header("sume_metadata_t");
+  force_arith_header("user_metadata_t");
+  force_arith_header("digest_data_t");
 }
 
 SimpleSumeSwitch::~SimpleSumeSwitch() {}
@@ -42,47 +42,78 @@ SimpleSumeSwitch::receive_(port_t port_num, const char *buffer, int len) {
   // we limit the packet buffer to original size + 512 bytes, which means we
   // cannot add more than 512 bytes of header data to the packet, which should
   // be more than enough
+  std::cout << "RECIEVED A PACKET" << std::endl;
+
+// https://github.com/p4lang/behavioral-model/blob/b826576c0d85c23ff9d59571fb70e44dc8475905/src/bm_sim/switch.cpp#L509
   auto packet = new_packet_ptr(port_num, packet_id++, len, // TODO: can I get rid of packet id?
                                bm::PacketBuffer(len + 512, buffer, len));
+
+  std::cout << "new ptr" << std::endl;
 
   BMELOG(packet_in, *packet); // TODO: what is packet_in?
 
   PHV *phv = packet->get_phv();
+  std::cout << "got phv" << std::endl;
   // many current P4 programs assume this
   // it is also part of the original P4 spec
   phv->reset_metadata();
 
-  phv->get_field("sume_metadata.src_port").set(port_num);
+  std::cout << "simple_sume_switch: meta reset" << std::endl;
+
+  // TODO: crash is here!!
+
+  phv->get_field("sume_metadata_t.src_port").set(port_num);
+
+  std::cout << "simple_sume_switch: set port" << std::endl;
   // using packet register 0 to store length, this register will be updated for
   // each add_header / remove_header primitive call
   // TODO: is this still relevant??
   packet->set_register(PACKET_LENGTH_REG_IDX, len);
-  phv->get_field("sume_metadata.pkt_len").set(len);
+  phv->get_field("sume_metadata_t.pkt_len").set(len);
 
-  Parser *parser = this->get_parser("TopParser");
+  std::cout << "simple_sume_switch: set len" << std::endl;
+
+  Parser *parser = this->get_parser("parser");
   Pipeline *pipeline = this->get_pipeline("TopPipe");
-  Deparser *deparser = this->get_deparser("TopDeparser");
+  Deparser *deparser = this->get_deparser("deparser");
 
   port_t ingress_port = packet->get_ingress_port();
   (void) ingress_port;
   BMLOG_DEBUG_PKT(*packet, "Processing packet received on port {}",
                   ingress_port);
 
-  parser->parse(packet.get());
+  std::cout << "simple_sume_switch: processing" << std::endl;
+
+  auto p = packet.get();
+
+  std::cout << "simple_sume_switch: got packet" << std::endl;
+
+  parser->parse(p);
+
+  std::cout << "simple_sume_switch: applying" << std::endl;
 
   pipeline->apply(packet.get());
 
+  std::cout << "simple_sume_switch: reset exit" << std::endl;
+
   packet->reset_exit(); // TODO: do I need this?
 
-  phv->get_field("sume_metadata.pkt_len").set(packet->get_data_size());
+  std::cout << "simple_sume_switch: setting len" << std::endl;
 
-  port_t egress_port = phv->get_field("sume_metadata.dst_port").get_int();
+  phv->get_field("sume_metadata_t.pkt_len").set(packet->get_data_size());
+
+  std::cout << "simple_sume_switch: setting dport" << std::endl;
+
+  port_t egress_port = phv->get_field("sume_metadata_t.dst_port").get_int();
   packet->set_egress_port(egress_port);
 
   if (DROP_PORT == egress_port) { // drop packet
+    std::cout << "dropping" << std::endl;
     BMLOG_DEBUG_PKT(*packet, "Dropping packet");
     return 0;
   }
+
+  std::cout << "simple_sume_switch: deparsing" << std::endl;
 
   deparser->deparse(packet.get());
 
@@ -93,13 +124,18 @@ SimpleSumeSwitch::receive_(port_t port_num, const char *buffer, int len) {
   BMELOG(packet_out, *packet);
   BMLOG_DEBUG_PKT(*packet, "Transmitting packet of size {} out of port {}",
                   packet->get_data_size(), packet->get_egress_port());
+  std::cout << "transmitting" << std::endl;
   this->transmit_fn(packet->get_egress_port(), packet->data(), packet->get_data_size());//TODO: is this-> needed?
+
+  std::cout << "done receving" << std::endl;
 
   return 0;
 }
 
 void
-SimpleSumeSwitch::start_and_return_() {}
+SimpleSumeSwitch::start_and_return_() {
+  std::cout << "STARTED!" << std::endl;
+}
 
 void
 SimpleSumeSwitch::reset_target_state_() {
@@ -107,23 +143,4 @@ SimpleSumeSwitch::reset_target_state_() {
   get_component<McSimplePreLAG>()->reset_state();
 }
 
-/* Switch instance */
 
-static SimpleSumeSwitch *simple_sume_switch;
-
-int
-main(int argc, char* argv[]) {
-  simple_sume_switch = new SimpleSumeSwitch();
-  int status = simple_sume_switch->init_from_command_line_options(argc, argv);
-  if (status != 0) std::exit(status);
-
-  // TODO: thrift
-  int thrift_port = simple_sume_switch->get_runtime_port();
-  bm_runtime::start_server(simple_sume_switch, thrift_port);
-
-  simple_sume_switch->start_and_return();
-
-  while (true) std::this_thread::sleep_for(std::chrono::seconds(100));
-
-  return 0;
-}

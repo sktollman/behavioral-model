@@ -47,29 +47,29 @@
   ],
   "headers" : [
     {
-      "name" : "sume_metadata_t",
-      "id" : 0,
-      "header_type" : "sume_metadata_t",
-      "metadata" : true,
-      "pi_omit" : true
-    },
-    {
       "name" : "scalars",
-      "id" : 1,
+      "id" : 0,
       "header_type" : "scalars_0",
       "metadata" : true,
       "pi_omit" : true
     },
     {
+      "name" : "sume_metadata_t",
+      "id" : 1,
+      "header_type" : "sume_metadata_t",
+      "metadata" : true,
+      "pi_omit" : true
+    },
+    {
       "name" : "ethernet",
-      "id" : 3,
+      "id" : 2,
       "header_type" : "Ethernet_h",
       "metadata" : false,
       "pi_omit" : true
     },
     {
       "name" : "calc",
-      "id" : 4,
+      "id" : 3,
       "header_type" : "Calc_h",
       "metadata" : false,
       "pi_omit" : true

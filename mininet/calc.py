@@ -101,7 +101,7 @@ def main():
                                               op2=int(ts[2].value))
             pkt = pkt/' '
 
-            pkt.show()
+            # pkt.show()
             resp = srp1(pkt, iface='eth0', timeout=1, verbose=False)
             if resp:
                 p4calc=resp[Calc]
