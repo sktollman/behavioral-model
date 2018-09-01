@@ -15,7 +15,12 @@
 packet_id_t SimpleSumeSwitch::packet_id = 0;
 
 SimpleSumeSwitch::SimpleSumeSwitch(bool enable_swap)
-  : Switch(enable_swap) {
+  : Switch(enable_swap),
+  my_transmit_fn([this](port_t port_num, packet_id_t pkt_id,
+                        const char *buffer, int len) {
+      _BM_UNUSED(pkt_id);
+      this->transmit_fn(port_num, buffer, len);
+  }) {
 
   add_required_field("sume_metadata_t", "dma_q_size");
   add_required_field("sume_metadata_t", "nf3_q_size");
@@ -125,11 +130,24 @@ SimpleSumeSwitch::receive_(port_t port_num, const char *buffer, int len) {
   BMLOG_DEBUG_PKT(*packet, "Transmitting packet of size {} out of port {}",
                   packet->get_data_size(), packet->get_egress_port());
   std::cout << "transmitting" << std::endl;
-  this->transmit_fn(packet->get_egress_port(), packet->data(), packet->get_data_size());//TODO: is this-> needed?
+  my_transmit_fn(packet->get_egress_port(), packet->get_packet_id(),
+                 packet->data(), packet->get_data_size());
 
   std::cout << "done receving" << std::endl;
 
   return 0;
+}
+
+void SimpleSumeSwitch::ima_fn() {};
+
+void
+SimpleSumeSwitch::set_transmit_fn(TransmitFn fn) {
+  my_transmit_fn = std::move(fn);
+}
+
+void
+SimpleSumeSwitch::set_transmit_function(TransmitFn fn) {
+  my_transmit_fn = std::move(fn);
 }
 
 void
@@ -142,5 +160,3 @@ SimpleSumeSwitch::reset_target_state_() {
   bm::Logger::get()->debug("Resetting simple_sume_switch target-specific state");
   get_component<McSimplePreLAG>()->reset_state();
 }
-
-

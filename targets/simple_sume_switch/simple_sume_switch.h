@@ -34,10 +34,17 @@ using bm::p4object_id_t;
 
 class SimpleSumeSwitch : public Switch {
  public:
+  using mirror_id_t = int;
+
+  using TransmitFn = std::function<void(port_t, packet_id_t,
+                                         const char *, int)>;
+
+ public:
   // by default, swapping is off
   explicit SimpleSumeSwitch(bool enable_swap = false);
 
   ~SimpleSumeSwitch();
+
 
   int receive_(port_t port_num, const char *buffer, int len) override;
 
@@ -50,9 +57,39 @@ class SimpleSumeSwitch : public Switch {
     return (packet_id-1);
   }
 
+  void set_transmit_fn(TransmitFn fn) {
+    my_transmit_fn = std::move(fn);
+  }
+
+  // TODO: what is mirroring???
+  int mirroring_mapping_add(mirror_id_t mirror_id, port_t egress_port) {
+    mirroring_map[mirror_id] = egress_port;
+    return 0;
+  }
+
+  int mirroring_mapping_delete(mirror_id_t mirror_id) {
+    return mirroring_map.erase(mirror_id);
+  }
+
+  bool mirroring_mapping_get(mirror_id_t mirror_id, port_t *port) const {
+    return get_mirroring_mapping(mirror_id, port);
+  }
+
  private:
   static packet_id_t packet_id;
   std::shared_ptr<McSimplePreLAG> pre; // TODO: is this necessary?
+
+  TransmitFn my_transmit_fn;
+  std::unordered_map<mirror_id_t, port_t> mirroring_map;
+
+  bool get_mirroring_mapping(mirror_id_t mirror_id, port_t *port) const {
+    const auto it = mirroring_map.find(mirror_id);
+    if (it != mirroring_map.end()) {
+      *port = it->second;
+      return true;
+    }
+    return false;
+  }
 };
 
 #endif  // SIMPLE_SUME_SWITCH_H_
