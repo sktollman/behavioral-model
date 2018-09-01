@@ -6,22 +6,28 @@
       "fields" : [
         ["temp", 48, false],
         ["user_metadata_t.unused", 8, false],
-        ["digest_data_t.unused", 256, false],
-        ["sume_metadata_t.dma_q_size", 16, false],
-        ["sume_metadata_t.nf3_q_size", 16, false],
-        ["sume_metadata_t.nf2_q_size", 16, false],
-        ["sume_metadata_t.nf1_q_size", 16, false],
-        ["sume_metadata_t.nf0_q_size", 16, false],
-        ["sume_metadata_t.send_dig_to_cpu", 8, false],
-        ["sume_metadata_t.drop", 8, false],
-        ["sume_metadata_t.dst_port", 8, false],
-        ["sume_metadata_t.src_port", 8, false],
-        ["sume_metadata_t.pkt_len", 16, false]
+        ["digest_data_t.unused", 256, false]
+      ]
+    },
+    {
+      "name" : "sume_metadata_t",
+      "id" : 1,
+      "fields" : [
+        ["dma_q_size", 16, false],
+        ["nf3_q_size", 16, false],
+        ["nf2_q_size", 16, false],
+        ["nf1_q_size", 16, false],
+        ["nf0_q_size", 16, false],
+        ["send_dig_to_cpu", 8, false],
+        ["drop", 8, false],
+        ["dst_port", 8, false],
+        ["src_port", 8, false],
+        ["pkt_len", 16, false]
       ]
     },
     {
       "name" : "Ethernet_h",
-      "id" : 1,
+      "id" : 2,
       "fields" : [
         ["dstAddr", 48, false],
         ["srcAddr", 48, false],
@@ -30,7 +36,7 @@
     },
     {
       "name" : "Calc_h",
-      "id" : 2,
+      "id" : 3,
       "fields" : [
         ["op1", 32, false],
         ["opCode", 8, false],
@@ -48,15 +54,22 @@
       "pi_omit" : true
     },
     {
-      "name" : "ethernet",
+      "name" : "sume_metadata_t",
       "id" : 1,
+      "header_type" : "sume_metadata_t",
+      "metadata" : true,
+      "pi_omit" : true
+    },
+    {
+      "name" : "ethernet",
+      "id" : 2,
       "header_type" : "Ethernet_h",
       "metadata" : false,
       "pi_omit" : true
     },
     {
       "name" : "calc",
-      "id" : 2,
+      "id" : 3,
       "header_type" : "Calc_h",
       "metadata" : false,
       "pi_omit" : true
@@ -167,7 +180,7 @@
       "name" : "deparser",
       "id" : 0,
       "source_info" : {
-        "filename" : "add_sume.p4",
+        "filename" : "../testdata/sume_samples/add_sume.p4",
         "line" : 126,
         "column" : 8,
         "source_fragment" : "TopDeparser"
@@ -199,7 +212,7 @@
             }
           ],
           "source_info" : {
-            "filename" : "add_sume.p4",
+            "filename" : "../testdata/sume_samples/add_sume.p4",
             "line" : 80,
             "column" : 8,
             "source_fragment" : "EthAddr_t temp = p.ethernet.dstAddr;"
@@ -218,7 +231,7 @@
             }
           ],
           "source_info" : {
-            "filename" : "add_sume.p4",
+            "filename" : "../testdata/sume_samples/add_sume.p4",
             "line" : 81,
             "column" : 8,
             "source_fragment" : "p.ethernet.dstAddr = p.ethernet.srcAddr"
@@ -237,7 +250,7 @@
             }
           ],
           "source_info" : {
-            "filename" : "add_sume.p4",
+            "filename" : "../testdata/sume_samples/add_sume.p4",
             "line" : 82,
             "column" : 8,
             "source_fragment" : "p.ethernet.srcAddr = temp"
@@ -263,7 +276,7 @@
             }
           ],
           "source_info" : {
-            "filename" : "add_sume.p4",
+            "filename" : "../testdata/sume_samples/add_sume.p4",
             "line" : 86,
             "column" : 8,
             "source_fragment" : "sume_metadata.dst_port = sume_metadata.src_port"
@@ -294,7 +307,7 @@
             }
           ],
           "source_info" : {
-            "filename" : "add_sume.p4",
+            "filename" : "../testdata/sume_samples/add_sume.p4",
             "line" : 90,
             "column" : 8,
             "source_fragment" : "p.calc.result = data"
@@ -320,7 +333,7 @@
             }
           ],
           "source_info" : {
-            "filename" : "add_sume.p4",
+            "filename" : "../testdata/sume_samples/add_sume.p4",
             "line" : 94,
             "column" : 8,
             "source_fragment" : "p.calc.result = 32w0"
@@ -369,7 +382,7 @@
             }
           ],
           "source_info" : {
-            "filename" : "add_sume.p4",
+            "filename" : "../testdata/sume_samples/add_sume.p4",
             "line" : 116,
             "column" : 12,
             "source_fragment" : "p.calc.result = p.calc.op1 + p.calc.op2"
@@ -383,7 +396,7 @@
       "name" : "TopPipe",
       "id" : 0,
       "source_info" : {
-        "filename" : "add_sume.p4",
+        "filename" : "../testdata/sume_samples/add_sume.p4",
         "line" : 74,
         "column" : 8,
         "source_fragment" : "TopPipe"
@@ -463,7 +476,7 @@
           "name" : "TopPipe.lookup_table",
           "id" : 3,
           "source_info" : {
-            "filename" : "add_sume.p4",
+            "filename" : "../testdata/sume_samples/add_sume.p4",
             "line" : 97,
             "column" : 10,
             "source_fragment" : "lookup_table"
@@ -503,7 +516,7 @@
           "name" : "node_4",
           "id" : 0,
           "source_info" : {
-            "filename" : "add_sume.p4",
+            "filename" : "../testdata/sume_samples/add_sume.p4",
             "line" : 115,
             "column" : 12,
             "source_fragment" : "p.calc.opCode == 8w0"
@@ -529,7 +542,7 @@
           "name" : "node_6",
           "id" : 1,
           "source_info" : {
-            "filename" : "add_sume.p4",
+            "filename" : "../testdata/sume_samples/add_sume.p4",
             "line" : 117,
             "column" : 19,
             "source_fragment" : "p.calc.opCode == 8w2"
