@@ -138,18 +138,6 @@ SimpleSumeSwitch::receive_(port_t port_num, const char *buffer, int len) {
   return 0;
 }
 
-void SimpleSumeSwitch::ima_fn() {};
-
-void
-SimpleSumeSwitch::set_transmit_fn(TransmitFn fn) {
-  my_transmit_fn = std::move(fn);
-}
-
-void
-SimpleSumeSwitch::set_transmit_function(TransmitFn fn) {
-  my_transmit_fn = std::move(fn);
-}
-
 void
 SimpleSumeSwitch::start_and_return_() {
   std::cout << "STARTED!" << std::endl;
