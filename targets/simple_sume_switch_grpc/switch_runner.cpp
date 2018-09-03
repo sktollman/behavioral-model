@@ -360,14 +360,14 @@ SimpleSwitchGrpcRunner::init_and_start(const bm::OptionsParser &parser) {
     sysrepo_driver->add_iface(p.first, p.second);
 #endif  // WITH_SYSREPO
 
-#ifdef WITH_THRIFT
-  int thrift_port = simple_switch->get_runtime_port();
-  bm_runtime::start_server(simple_switch.get(), thrift_port);
-  using ::sswitch_runtime::SimpleSwitchIf;
-  using ::sswitch_runtime::SimpleSwitchProcessor;
-  bm_runtime::add_service<SimpleSwitchIf, SimpleSwitchProcessor>(
-          "simple_switch", sswitch_runtime::get_handler(simple_switch.get()));
-#endif  // WITH_THRIFT
+// #ifdef WITH_THRIFT
+//   int thrift_port = simple_switch->get_runtime_port();
+//   bm_runtime::start_server(simple_switch.get(), thrift_port);
+//   using ::sswitch_runtime::SimpleSwitchIf;
+//   using ::sswitch_runtime::SimpleSwitchProcessor;
+//   bm_runtime::add_service<SimpleSwitchIf, SimpleSwitchProcessor>(
+//           "simple_switch", sswitch_runtime::get_handler(simple_switch.get()));
+// #endif  // WITH_THRIFT
 
   simple_switch->start_and_return();
 
