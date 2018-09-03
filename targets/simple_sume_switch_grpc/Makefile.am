@@ -45,6 +45,13 @@ libbm_grpc_dataplane.la \
 -lpifeproto -lpigrpcserver -lpi \
 $(GRPC_LIBS) $(PROTOBUF_LIBS)
 
+if WITH_THRIFT
+libsimple_sume_switch_grpc_la_LIBADD += \
+$(builddir)/../../src/bm_runtime/libbmruntime.la \
+$(builddir)/../../thrift_src/libruntimestubs.la \
+$(builddir)/../simple_sume_switch/libsimplesumeswitch_thrift.la
+endif
+
 # dataplane_interface.proto
 
 EXTRA_DIST = p4/bm/dataplane_interface.proto
