@@ -1023,7 +1023,6 @@ Parser::parse(Packet *pkt) const {
       DBG_CTR_PARSER | get_id());
   BMLOG_DEBUG_PKT(*pkt, "Parser '{}': start", get_name());
   // at the beginning of parsing, we "reset" the error code to Core::NoError
-
   pkt->set_error_code(no_error);
   const char *data = pkt->data();
   if (!init_state) return;
