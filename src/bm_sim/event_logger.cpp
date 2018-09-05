@@ -97,6 +97,7 @@ EventLogger::parser_start(const Packet &packet, const Parser &parser) {
     int parser_id;
   } __attribute__((packed));
   msg_t msg;
+ 
   fill_msg_hdr(EventType::PARSER_START, device_id, packet, &msg);
   msg.parser_id = parser.get_id();
   transport_instance->send(reinterpret_cast<char *>(&msg), sizeof(msg));
