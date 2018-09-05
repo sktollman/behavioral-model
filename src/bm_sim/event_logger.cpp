@@ -96,7 +96,7 @@ EventLogger::parser_start(const Packet &packet, const Parser &parser) {
   struct msg_t : msg_hdr_t {
     int parser_id;
   } __attribute__((packed));
- 
+
   msg_t msg;
   fill_msg_hdr(EventType::PARSER_START, device_id, packet, &msg);
   msg.parser_id = parser.get_id();
