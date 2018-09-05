@@ -93,18 +93,13 @@ EventLogger::packet_out(const Packet &packet) {
 
 void
 EventLogger::parser_start(const Packet &packet, const Parser &parser) {
-  std::cout << "parser start: here" << std::endl;
   struct msg_t : msg_hdr_t {
     int parser_id;
   } __attribute__((packed));
-std::cout << "parser start: 2" << std::endl;
   msg_t msg;
   fill_msg_hdr(EventType::PARSER_START, device_id, packet, &msg);
-  std::cout << "parser start: 3" << std::endl;
   msg.parser_id = parser.get_id();
-  std::cout << "parser start: 4" << std::endl;
   transport_instance->send(reinterpret_cast<char *>(&msg), sizeof(msg));
-  std::cout << "parser start: 5" << std::endl;
 }
 
 void
