@@ -1015,29 +1015,21 @@ Parser::verify_checksums(const Packet &pkt) const {
 
 void
 Parser::parse(Packet *pkt) const {
-  std::cout << "parser: here! " << pkt << std::endl;
-  // std::cout << "parser: here! " << *pkt << std::endl;
-  // std::cout << "parser: here! " << pkt->get_id() << std::endl;
   BMELOG(parser_start, *pkt, *this);
-  std::cout << "parser: logged" << std::endl;
   // TODO(antonin)
   // this is temporary while we experiment with the debugger
   DEBUGGER_NOTIFY_CTR(
       Debugger::PacketId::make(pkt->get_packet_id(), pkt->get_copy_id()),
       DBG_CTR_PARSER | get_id());
-  std::cout << "parser: debugged" << std::endl;
   BMLOG_DEBUG_PKT(*pkt, "Parser '{}': start", get_name());
   // at the beginning of parsing, we "reset" the error code to Core::NoError
-  std::cout << "parser: setting error code" << std::endl;
 
   pkt->set_error_code(no_error);
-  std::cout << "parser: getting data" << std::endl;
   const char *data = pkt->data();
   if (!init_state) return;
   const ParseState *next_state = init_state;
   size_t bytes_parsed = 0;
   while (next_state) {
-    std::cout<< "Parser '" << get_name() << "' entering state '" << next_state->get_name() << "'" << std::endl;
     BMLOG_DEBUG_PKT(*pkt, "Parser '{}' entering state '{}'",
                     get_name(), next_state->get_name());
     try {
@@ -1051,7 +1043,6 @@ Parser::parse(Packet *pkt) const {
     }
     BMLOG_TRACE_PKT(*pkt, "Bytes parsed: {}", bytes_parsed);
   }
-  std::cout << "parser: out of while" << std::endl;
   pkt->remove(bytes_parsed);
   verify_checksums(*pkt);
   BMELOG(parser_done, *pkt, *this);
