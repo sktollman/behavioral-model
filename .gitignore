@@ -63,6 +63,7 @@ install-sh
 missing
 stamp-h1
 targets/simple_router/simple_router
+targets/simple_sume_switch/simple_sume_switch
 test-driver
 .dirstamp
 tests/test_*
